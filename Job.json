@@ -1,0 +1,2696 @@
+{
+  "name": "My workflow 40",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        860,
+        -220
+      ],
+      "id": "740b1d35-8ed2-4aad-ac05-4e2bf4438345",
+      "name": "When chat message received",
+      "webhookId": "1f26c72e-2e20-4131-ae0f-33b91c6ddcba"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are a HR assistant, user will provide you the target job keyword and location with his persional profile by LinkedIn ID or Github ID, you will get to search with the tool for the job and prepare his resume."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1080,
+        -220
+      ],
+      "id": "9b6bc2a9-455b-4044-9e4b-3e1f7d8f523e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1160,
+        60
+      ],
+      "id": "661a96ee-0f77-497c-ab52-2563b263ad02",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/curious_coder~linkedin-jobs-scraper/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"count\": {{ $('When Executed by Another Workflow').item.json.count }},\n    \"scrapeCompany\": true,\n    \"urls\": [\n        \"https://www.linkedin.com/jobs/search/?keywords={{ $('When Executed by Another Workflow').item.json.keywords }}&location={{ $('When Executed by Another Workflow').item.json.location }}\"\n    ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1640,
+        340
+      ],
+      "id": "389ea48c-eff8-4219-9afb-193dd551cb96",
+      "name": "Apify Linkedin Crawler",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "DVfjV0iPqN1b0T2P",
+          "name": "Query Auth Youtube - Andrew"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "count",
+              "type": "number"
+            },
+            {
+              "name": "keywords"
+            },
+            {
+              "name": "location"
+            },
+            {
+              "name": "github_profile",
+              "type": "object"
+            },
+            {
+              "name": "github_project",
+              "type": "array"
+            },
+            {
+              "name": "linkedin_profile",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        840,
+        340
+      ],
+      "id": "9581a486-eae0-4dd9-995d-7ea921079dc4",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "name": "linkedin_job_crawler_to_google_sheet",
+        "description": "Crawl a job from LinkedIn and store it in a Google Sheet. The \"count\" var should be at least 100.",
+        "workflowId": {
+          "__rl": true,
+          "value": "E2VljvIc13kKwv9v",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "count": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('count', ``, 'number') }}",
+            "keywords": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('keywords', ``, 'string') }}",
+            "location": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('location', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "count",
+              "displayName": "count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number"
+            },
+            {
+              "id": "keywords",
+              "displayName": "keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1340,
+        60
+      ],
+      "id": "eca1dd3a-5971-43e6-8171-5a9904181bdf",
+      "name": "Linkedin Job Crawler to Google Sheet"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "openai/gpt-4.1"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        980,
+        60
+      ],
+      "id": "8c6f1dc5-b972-4500-9559-b21547ff3e69",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get Github Profile of a user by input \"username\"",
+        "url": "=https://api.github.com/users/{username}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1500,
+        60
+      ],
+      "id": "2f94e287-621e-44c4-ad06-1333aed623ee",
+      "name": "Get Github Profile"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get Github Repo of a user by input \"username\"",
+        "url": "=https://api.github.com/users/{username}/repos"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1660,
+        60
+      ],
+      "id": "5e527a0b-d6d0-462a-9eaf-ea640513a399",
+      "name": "Get Github Repo"
+    },
+    {
+      "parameters": {
+        "toolDescription": "A Linkedin profile crawler to get a user profile by input \"linkedin_username\".",
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/dev_fusion~linkedin-profile-scraper/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"profileUrls\": [\n    \"https://www.linkedin.com/in/{linkedin_username}\"\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1820,
+        60
+      ],
+      "id": "bc70cbbd-5a99-4411-8eaf-1c8e02dcf3c2",
+      "name": "Linkedin Profile Crawler"
+    },
+    {
+      "parameters": {
+        "content": "## Apify [Exclusive Discounts for Premium Members]\n\nLinkedIn Profile Scraper\nhttps://apify.com/dev_fusion/linkedin-profile-scraper\n\nLinkedIn Job Scraper\nhttps://apify.com/curious_coder/linkedin-jobs-scraper",
+        "height": 240,
+        "width": 580
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        120,
+        320
+      ],
+      "id": "dc79608d-c4fb-4461-9a6b-51081471b016",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "160mpEi2DqWmzU53jOyXCOti3is1fP16vkR-GBgbVycg",
+          "mode": "list",
+          "cachedResultName": "n8n test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/160mpEi2DqWmzU53jOyXCOti3is1fP16vkR-GBgbVycg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1649876290,
+          "mode": "list",
+          "cachedResultName": "job",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/160mpEi2DqWmzU53jOyXCOti3is1fP16vkR-GBgbVycg/edit#gid=1649876290"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "trackingId",
+              "displayName": "trackingId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "refId",
+              "displayName": "refId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "companyName",
+              "displayName": "companyName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "companyLinkedinUrl",
+              "displayName": "companyLinkedinUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "companyLogo",
+              "displayName": "companyLogo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "salaryInfo",
+              "displayName": "salaryInfo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "postedAt",
+              "displayName": "postedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "benefits",
+              "displayName": "benefits",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "descriptionHtml",
+              "displayName": "descriptionHtml",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "applicantsCount",
+              "displayName": "applicantsCount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "applyUrl",
+              "displayName": "applyUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "descriptionText",
+              "displayName": "descriptionText",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "seniorityLevel",
+              "displayName": "seniorityLevel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "employmentType",
+              "displayName": "employmentType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "jobFunction",
+              "displayName": "jobFunction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "industries",
+              "displayName": "industries",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "inputUrl",
+              "displayName": "inputUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "companyDescription",
+              "displayName": "companyDescription",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "companyAddress",
+              "displayName": "companyAddress",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "companyWebsite",
+              "displayName": "companyWebsite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "companyEmployeesCount",
+              "displayName": "companyEmployeesCount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "companySlogan",
+              "displayName": "companySlogan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "jobPosterName",
+              "displayName": "jobPosterName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "jobPosterTitle",
+              "displayName": "jobPosterTitle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "jobPosterPhoto",
+              "displayName": "jobPosterPhoto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "jobPosterProfileUrl",
+              "displayName": "jobPosterProfileUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "useAppend": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1860,
+        340
+      ],
+      "id": "6044e677-7afb-4ff6-8002-232aaa71523d",
+      "name": "Store Jobs to Google Sheet"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "openai/gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "OPENAI/GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Base on the user profile, prepare a json for jsonresume, here's the json structure:\n\nexport interface Root {\n  basics: Basics\n  work: Work[]\n  volunteer: Volunteer[]\n  education: Education[]\n  awards: Award[]\n  certificates: Certificate[]\n  publications: Publication[]\n  skills: Skill[]\n  languages: Language[]\n  interests: Interest[]\n  references: Reference[]\n  projects: Project[]\n}\n\nexport interface Basics {\n  name: string\n  label: string\n  image: string\n  email: string\n  phone: string\n  url: string\n  summary: string\n  location: Location\n  profiles: Profile[]\n}\n\nexport interface Location {\n  address: string\n  postalCode: string\n  city: string\n  countryCode: string\n  region: string\n}\n\nexport interface Profile {\n  network: string\n  username: string\n  url: string\n}\n\nexport interface Work {\n  name: string\n  position: string\n  url: string\n  startDate: string\n  endDate: string\n  summary: string\n  highlights: string[]\n}\n\nexport interface Volunteer {\n  organization: string\n  position: string\n  url: string\n  startDate: string\n  endDate: string\n  summary: string\n  highlights: string[]\n}\n\nexport interface Education {\n  institution: string\n  url: string\n  area: string\n  studyType: string\n  startDate: string\n  endDate: string\n  score: string\n  courses: string[]\n}\n\nexport interface Award {\n  title: string\n  date: string\n  awarder: string\n  summary: string\n}\n\nexport interface Certificate {\n  name: string\n  date: string\n  issuer: string\n  url: string\n}\n\nexport interface Publication {\n  name: string\n  publisher: string\n  releaseDate: string\n  url: string\n  summary: string\n}\n\nexport interface Skill {\n  name: string\n  level: string\n  keywords: string[]\n}\n\nexport interface Language {\n  language: string\n  fluency: string\n}\n\nexport interface Interest {\n  name: string\n  keywords: string[]\n}\n\nexport interface Reference {\n  name: string\n  reference: string\n}\n\nexport interface Project {\n  name: string\n  startDate: string\n  endDate: string\n  description: string\n  highlights: string[]\n  url: string\n}\n\nExample:\n{\n  \"basics\": {\n    \"name\": \"John Doe\",\n    \"label\": \"Programmer\",\n    \"image\": \"\",\n    \"email\": \"john@gmail.com\",\n    \"phone\": \"(912) 555-4321\",\n    \"url\": \"https://johndoe.com\",\n    \"summary\": \"A summary of John Doe…\",\n    \"location\": {\n      \"address\": \"2712 Broadway St\",\n      \"postalCode\": \"CA 94115\",\n      \"city\": \"San Francisco\",\n      \"countryCode\": \"US\",\n      \"region\": \"California\"\n    },\n    \"profiles\": [{\n      \"network\": \"Twitter\",\n      \"username\": \"john\",\n      \"url\": \"https://twitter.com/john\"\n    }]\n  },\n  \"work\": [{\n    \"name\": \"Company\",\n    \"position\": \"President\",\n    \"url\": \"https://company.com\",\n    \"startDate\": \"2013-01-01\",\n    \"endDate\": \"2014-01-01\",\n    \"summary\": \"Description…\",\n    \"highlights\": [\n      \"Started the company\"\n    ]\n  }],\n  \"volunteer\": [{\n    \"organization\": \"Organization\",\n    \"position\": \"Volunteer\",\n    \"url\": \"https://organization.com/\",\n    \"startDate\": \"2012-01-01\",\n    \"endDate\": \"2013-01-01\",\n    \"summary\": \"Description…\",\n    \"highlights\": [\n      \"Awarded 'Volunteer of the Month'\"\n    ]\n  }],\n  \"education\": [{\n    \"institution\": \"University\",\n    \"url\": \"https://institution.com/\",\n    \"area\": \"Software Development\",\n    \"studyType\": \"Bachelor\",\n    \"startDate\": \"2011-01-01\",\n    \"endDate\": \"2013-01-01\",\n    \"score\": \"4.0\",\n    \"courses\": [\n      \"DB1101 - Basic SQL\"\n    ]\n  }],\n  \"awards\": [{\n    \"title\": \"Award\",\n    \"date\": \"2014-11-01\",\n    \"awarder\": \"Company\",\n    \"summary\": \"There is no spoon.\"\n  }],\n  \"certificates\": [{\n    \"name\": \"Certificate\",\n    \"date\": \"2021-11-07\",\n    \"issuer\": \"Company\",\n    \"url\": \"https://certificate.com\"\n  }],\n  \"publications\": [{\n    \"name\": \"Publication\",\n    \"publisher\": \"Company\",\n    \"releaseDate\": \"2014-10-01\",\n    \"url\": \"https://publication.com\",\n    \"summary\": \"Description…\"\n  }],\n  \"skills\": [{\n    \"name\": \"Web Development\",\n    \"level\": \"Master\",\n    \"keywords\": [\n      \"HTML\",\n      \"CSS\",\n      \"JavaScript\"\n    ]\n  }],\n  \"languages\": [{\n    \"language\": \"English\",\n    \"fluency\": \"Native speaker\"\n  }],\n  \"interests\": [{\n    \"name\": \"Wildlife\",\n    \"keywords\": [\n      \"Ferrets\",\n      \"Unicorns\"\n    ]\n  }],\n  \"references\": [{\n    \"name\": \"Jane Doe\",\n    \"reference\": \"Reference…\"\n  }],\n  \"projects\": [{\n    \"name\": \"Project\",\n    \"startDate\": \"2019-01-01\",\n    \"endDate\": \"2021-01-01\",\n    \"description\": \"Description...\",\n    \"highlights\": [\n      \"Won award at AIHacks 2016\"\n    ],\n    \"url\": \"https://project.com/\"\n  }]\n}\n\nUser Input:\n1. Github Profile:\n{{ JSON.stringify($json.github_profile) }}\n\n2. Github Projects:\n{{ JSON.stringify($json.github_project) }}\n\n3. Linkedin Profile:\n{{ JSON.stringify($json.linkedin_profile) }}\n\nRemember to put everything in the jsonresume and don't skip anything. This will be the raw json input for further resume generation.\n\nYour JSON output:"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1060,
+        340
+      ],
+      "id": "9d64b61b-fcdb-4d27-b4bc-5515a1739b22",
+      "name": "OpenAI GPT4.1 Mini",
+      "credentials": {
+        "openAiApi": {
+          "id": "S0mLSPwbHrlRxd2I",
+          "name": "Together AI - Andrew"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "content": "={{ JSON.stringify($json.message.content) }}",
+        "name": "=raw_resume.json",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1TG1beOkZLWoskUy0WncLT_8mmt1BsIn0",
+          "mode": "list",
+          "cachedResultName": "n8n-demo-resume",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1TG1beOkZLWoskUy0WncLT_8mmt1BsIn0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1420,
+        340
+      ],
+      "id": "72ffdbe6-c51d-4f2d-b491-14f85573de40",
+      "name": "Google Drive"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1YKVEyTeyDqAG8OAkYhQwK2fcmGdC4IE3",
+          "mode": "list",
+          "cachedResultName": "raw_resume.json",
+          "cachedResultUrl": "https://drive.google.com/file/d/1YKVEyTeyDqAG8OAkYhQwK2fcmGdC4IE3/view?usp=drivesdk"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1060,
+        660
+      ],
+      "id": "c16c0e03-d6d9-4a85-b539-ff815099ef62",
+      "name": "Google Drive1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "160mpEi2DqWmzU53jOyXCOti3is1fP16vkR-GBgbVycg",
+          "mode": "list",
+          "cachedResultName": "n8n test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/160mpEi2DqWmzU53jOyXCOti3is1fP16vkR-GBgbVycg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1649876290,
+          "mode": "list",
+          "cachedResultName": "job",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/160mpEi2DqWmzU53jOyXCOti3is1fP16vkR-GBgbVycg/edit#gid=1649876290"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "sent"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1500,
+        660
+      ],
+      "id": "ac118d91-59d2-4705-ba2d-7bca2bff5915",
+      "name": "Google Sheets"
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        660
+      ],
+      "id": "11d09132-6c1c-421a-9acc-18f07d8ef7ed",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.data.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1500,
+        900
+      ],
+      "id": "2843f04b-f6da-48c1-91af-d35fbd7b2394",
+      "name": "Download File"
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Google Sheets').item.json.id }}-resume.pdf",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1TG1beOkZLWoskUy0WncLT_8mmt1BsIn0",
+          "mode": "list",
+          "cachedResultName": "n8n-demo-resume",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1TG1beOkZLWoskUy0WncLT_8mmt1BsIn0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1720,
+        900
+      ],
+      "id": "50700571-fa9d-4984-895f-680371364a85",
+      "name": "Google Drive2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.andynocode.com/api/function/create-resume",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ theme: \"even\", ...$json.message.content }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        900
+      ],
+      "id": "396435a2-35e6-4679-9473-925afd69ee5e",
+      "name": "Andynocode API Create Resume"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1d2bf03f-bc3c-4400-9ec4-e5e63c0abc0e",
+              "leftValue": "={{ $json.message.content.found }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1280,
+        1200
+      ],
+      "id": "ccf6240c-b667-4434-a377-c045b3ba44dc",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0836ce82-06a3-4478-b14b-2d629be16664",
+              "leftValue": "={{ $json.choices[0].message.content }}",
+              "rightValue": "null",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1060,
+        1480
+      ],
+      "id": "53c90d00-cf0a-4101-a0ff-2dd0a5aeced5",
+      "name": "If Find the Email"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "openai/gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "OPENAI/GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert cover‑letter writer.\nI will give you:\n\n1. A job description (in job below)\n{{ JSON.stringify($json) }}\n\n2. My current resume in JSON Resume format (in resume below)\n{{ JSON.stringify($('Extract from File').item.json.data) }}\n\nYour task\n\n1. Write a concise, persuasive email‑style cover letter that highlights how my background matches the key requirements and keywords from job.\n\n2. Reference only the information in resume; do not invent or assume anything new.\n\n3. Use a professional tone, address the hiring manager (e.g., “Dear Hiring Team,”), and close with a strong call to action.\n\n4. Return only a JSON object with two fields:\n\n{\n  \"subject\": \"<Email subject line>\",\n  \"content\": \"<Full email body>\"\n}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "maxTokens": 10000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1720,
+        660
+      ],
+      "id": "87252a11-478d-446b-94df-78af0be6e690",
+      "name": "Draft Email",
+      "credentials": {
+        "openAiApi": {
+          "id": "S0mLSPwbHrlRxd2I",
+          "name": "Together AI - Andrew"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "openai/gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "OPENAI/GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert resume writer.\nI will give you:\n\n1. A job description (in job below)\n{{ JSON.stringify($json) }}\n\n2. My current resume in JSON Resume format (in resume below)\n{{ JSON.stringify($('Extract from File').item.json.data) }}\n\nYour task\n\n1. Tailor every section of resume—experience, skills, education, projects—to align with the keywords and requirements in job.\n\n2. Reorder, rephrase, and prioritize entries so the hiring manager sees the perfect match at a glance.\n\n3. Do not add, invent, or assume any information not already in resume.\n\n4. Output the final resume only in valid JSON Resume format.\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        840,
+        900
+      ],
+      "id": "458f5aac-2a5e-4447-b696-ab4eb89845e4",
+      "name": "Generate Resume Json",
+      "credentials": {
+        "openAiApi": {
+          "id": "S0mLSPwbHrlRxd2I",
+          "name": "Together AI - Andrew"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "openai/gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "OPENAI/GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=I'm going to apply for this job, try to find the email in the following job description json:\n{{ JSON.stringify($('Google Sheets').item) }}\n\nOnly return:\n{ \"found\": boolean, \"email\": \"<example@gmail.com>\" }"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        840,
+        1200
+      ],
+      "id": "595636bf-851c-4067-bc1b-05f5272f74db",
+      "name": "Find Email Address",
+      "credentials": {
+        "openAiApi": {
+          "id": "S0mLSPwbHrlRxd2I",
+          "name": "Together AI - Andrew"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.perplexity.ai/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a research assistant.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Get the HR email of this company from the follow job, company: {{ $('Google Sheets').item.json.companyName }} in {{ JSON.parse($('Google Sheets').item.json.companyAddress).addressCountry }}, reference website: {{ $('Google Sheets').item.json.companyWebsite }} only return the HR related email addres string like 'xxx@example.com', if not found, return null, remember only return email or null without other string\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "e1e03c7b-74d7-4736-a869-4b34cffd39cf",
+      "name": "Perplexity Get Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        840,
+        1480
+      ],
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $('Draft Email').item.json.message.content.subject }}",
+        "message": "={{ $('Draft Email').item.json.message.content.content }}",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "data"
+              }
+            ]
+          },
+          "sendTo": "={{ $('Set Email Field 5').item.json.email }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2620,
+        1600
+      ],
+      "id": "7f55f6ff-bc1e-41a0-88db-8d46d97c77bb",
+      "name": "Gmail1",
+      "webhookId": "38bcab33-75e5-4fa5-88a8-cd064b8ce087"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Andynocode API Create Resume').item.json.data.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        1600
+      ],
+      "id": "7574ac07-8c65-417e-9d42-1558499df9d2",
+      "name": "Download Resume for Email 1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/mixed_people/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q_keywords",
+              "value": "={{ $('Google Sheets').item.json.companyName }}"
+            },
+            {
+              "name": "contact_email_status[]",
+              "value": "verified"
+            },
+            {
+              "name": "include_similar_titles",
+              "value": "true"
+            },
+            {
+              "name": "person_titles[]",
+              "value": "hr"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "37f75dcf-c00f-4b80-a50e-f0d5c2765f82",
+      "name": "Apollo People Search",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        840,
+        1760
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0836ce82-06a3-4478-b14b-2d629be16664",
+              "leftValue": "={{ $json.people[0].email }}",
+              "rightValue": "null",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1060,
+        1760
+      ],
+      "id": "b9603664-14b2-4786-b0d4-4debceabc9cc",
+      "name": "If Find the Email1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/people/match",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "reveal_personal_emails",
+              "value": "true"
+            },
+            {
+              "name": "reveal_phone_number",
+              "value": "false"
+            },
+            {
+              "name": "id",
+              "value": "={{ $json.people[0].id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4ac2e51b-b422-4e87-b364-e74d1cf35919",
+      "name": "Get Emails From Apollo1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1300,
+        1760
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/mixed_people/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q_keywords",
+              "value": "={{ $('Google Sheets').item.json.companyName }}"
+            },
+            {
+              "name": "contact_email_status[]",
+              "value": "verified"
+            },
+            {
+              "name": "include_similar_titles",
+              "value": "true"
+            },
+            {
+              "name": "person_seniorities[]",
+              "value": "owner"
+            },
+            {
+              "name": "person_seniorities[]",
+              "value": "founder"
+            },
+            {
+              "name": "person_seniorities[]",
+              "value": "c_suite"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7abcedcf-2ce4-416b-8793-ca0c8b765c51",
+      "name": "Apollo People Search1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        840,
+        2040
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0836ce82-06a3-4478-b14b-2d629be16664",
+              "leftValue": "={{ $json.people[0].email }}",
+              "rightValue": "null",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1060,
+        2040
+      ],
+      "id": "7c860778-1fb4-432b-ad4e-3bd60dcd35e7",
+      "name": "If Find the Email2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/people/match",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "reveal_personal_emails",
+              "value": "true"
+            },
+            {
+              "name": "reveal_phone_number",
+              "value": "false"
+            },
+            {
+              "name": "id",
+              "value": "={{ $json.people[0].id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0a877302-f672-4268-8259-5e521b3e7a45",
+      "name": "Get Emails From Apollo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1300,
+        2040
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "158d99c6-03c3-43e4-be3f-4ad71c077ca4",
+              "name": "email",
+              "value": "={{ $json.message.content.found }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1500,
+        1200
+      ],
+      "id": "83546423-60b3-4368-a94c-cd2e54b59d0e",
+      "name": "Set Email Field"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "158d99c6-03c3-43e4-be3f-4ad71c077ca4",
+              "name": "email",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1500,
+        1480
+      ],
+      "id": "f34053cf-c343-44f8-96a2-85e723384a08",
+      "name": "Set Email Field 2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "158d99c6-03c3-43e4-be3f-4ad71c077ca4",
+              "name": "email",
+              "value": "={{ $json.person.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1500,
+        1760
+      ],
+      "id": "5da01fe4-4c47-46ad-92a4-dace0925bd0d",
+      "name": "Set Email Field 3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "158d99c6-03c3-43e4-be3f-4ad71c077ca4",
+              "name": "email",
+              "value": "={{ $json.person.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1500,
+        2040
+      ],
+      "id": "93a6cca5-4f0e-4cb4-99f8-df2d3ccd468b",
+      "name": "Set Email Field 4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "158d99c6-03c3-43e4-be3f-4ad71c077ca4",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2180,
+        1600
+      ],
+      "id": "00cb723e-76b8-4809-b564-c3468d461e71",
+      "name": "Set Email Field 5"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "160mpEi2DqWmzU53jOyXCOti3is1fP16vkR-GBgbVycg",
+          "mode": "list",
+          "cachedResultName": "n8n test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/160mpEi2DqWmzU53jOyXCOti3is1fP16vkR-GBgbVycg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1649876290,
+          "mode": "list",
+          "cachedResultName": "job",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/160mpEi2DqWmzU53jOyXCOti3is1fP16vkR-GBgbVycg/edit#gid=1649876290"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Google Sheets').item.json.id }}",
+            "sent": "TRUE",
+            "email_content": "={{ $('Draft Email').item.json.message.content.subject }}\n\n{{ $('Draft Email').item.json.message.content.content }}",
+            "email_to": "={{ $('Set Email Field 5').item.json.email }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sent",
+              "displayName": "sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email_content",
+              "displayName": "email_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_to",
+              "displayName": "email_to",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "trackingId",
+              "displayName": "trackingId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "refId",
+              "displayName": "refId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyName",
+              "displayName": "companyName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyLinkedinUrl",
+              "displayName": "companyLinkedinUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyLogo",
+              "displayName": "companyLogo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "salaryInfo",
+              "displayName": "salaryInfo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "postedAt",
+              "displayName": "postedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "benefits",
+              "displayName": "benefits",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "descriptionHtml",
+              "displayName": "descriptionHtml",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "applicantsCount",
+              "displayName": "applicantsCount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "applyUrl",
+              "displayName": "applyUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "descriptionText",
+              "displayName": "descriptionText",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "seniorityLevel",
+              "displayName": "seniorityLevel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "employmentType",
+              "displayName": "employmentType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jobFunction",
+              "displayName": "jobFunction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "industries",
+              "displayName": "industries",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "inputUrl",
+              "displayName": "inputUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyDescription",
+              "displayName": "companyDescription",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyAddress",
+              "displayName": "companyAddress",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyWebsite",
+              "displayName": "companyWebsite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyEmployeesCount",
+              "displayName": "companyEmployeesCount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companySlogan",
+              "displayName": "companySlogan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jobPosterName",
+              "displayName": "jobPosterName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jobPosterTitle",
+              "displayName": "jobPosterTitle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jobPosterPhoto",
+              "displayName": "jobPosterPhoto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jobPosterProfileUrl",
+              "displayName": "jobPosterProfileUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2840,
+        1600
+      ],
+      "id": "634e4774-dd10-40bd-9b52-a25a0f1a76ed",
+      "name": "Google Sheets2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "160mpEi2DqWmzU53jOyXCOti3is1fP16vkR-GBgbVycg",
+          "mode": "list",
+          "cachedResultName": "n8n test",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/160mpEi2DqWmzU53jOyXCOti3is1fP16vkR-GBgbVycg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1649876290,
+          "mode": "list",
+          "cachedResultName": "job",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/160mpEi2DqWmzU53jOyXCOti3is1fP16vkR-GBgbVycg/edit#gid=1649876290"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Google Sheets').item.json.id }}",
+            "sent": "FALSE",
+            "email_content": "={{ $('Draft Email').item.json.message.content.subject }}  {{ $('Draft Email').item.json.message.content.content }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sent",
+              "displayName": "sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email_content",
+              "displayName": "email_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_to",
+              "displayName": "email_to",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "trackingId",
+              "displayName": "trackingId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "refId",
+              "displayName": "refId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyName",
+              "displayName": "companyName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyLinkedinUrl",
+              "displayName": "companyLinkedinUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyLogo",
+              "displayName": "companyLogo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "salaryInfo",
+              "displayName": "salaryInfo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "postedAt",
+              "displayName": "postedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "benefits",
+              "displayName": "benefits",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "descriptionHtml",
+              "displayName": "descriptionHtml",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "applicantsCount",
+              "displayName": "applicantsCount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "applyUrl",
+              "displayName": "applyUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "descriptionText",
+              "displayName": "descriptionText",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "seniorityLevel",
+              "displayName": "seniorityLevel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "employmentType",
+              "displayName": "employmentType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jobFunction",
+              "displayName": "jobFunction",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "industries",
+              "displayName": "industries",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "inputUrl",
+              "displayName": "inputUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyDescription",
+              "displayName": "companyDescription",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyAddress",
+              "displayName": "companyAddress",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyWebsite",
+              "displayName": "companyWebsite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companyEmployeesCount",
+              "displayName": "companyEmployeesCount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "companySlogan",
+              "displayName": "companySlogan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jobPosterName",
+              "displayName": "jobPosterName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jobPosterTitle",
+              "displayName": "jobPosterTitle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jobPosterPhoto",
+              "displayName": "jobPosterPhoto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "jobPosterProfileUrl",
+              "displayName": "jobPosterProfileUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        840,
+        2280
+      ],
+      "id": "191f0644-d01b-4e9b-834f-e2157a859565",
+      "name": "Google Sheets1"
+    },
+    {
+      "parameters": {
+        "content": "## Job Search Agent",
+        "height": 520,
+        "width": 1220
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        760,
+        -300
+      ],
+      "id": "2d5b3bc6-04d7-4670-b20d-7f855f961749",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## LinkedIn Job Scrapper",
+        "height": 280,
+        "width": 1320,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        760,
+        260
+      ],
+      "id": "37dee963-a72b-480f-aa77-bb78eae858ce",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Prepare Resume",
+        "height": 500,
+        "width": 1320,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        760,
+        580
+      ],
+      "id": "ccdf26f1-0a70-410e-b3ce-31701e2482bb",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Get Email from Job Post",
+        "height": 240,
+        "width": 1320,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        760,
+        1120
+      ],
+      "id": "3993177f-33bf-4d7e-bf74-c4061a9bcf3f",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Get HR Email from Perplexity",
+        "height": 240,
+        "width": 1320,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        760,
+        1400
+      ],
+      "id": "23a77399-17a1-424a-9342-52f722ace994",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Get HR Email from Apollo",
+        "height": 240,
+        "width": 1320,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        760,
+        1680
+      ],
+      "id": "f61b553b-eec3-4dd1-acd6-8bdbb4ca0699",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## Get Owner / C Suite Email from Perplexity",
+        "height": 260,
+        "width": 1320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        760,
+        1960
+      ],
+      "id": "71cd03c7-4436-48da-9416-1fce7362efd6",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "## Draft Email",
+        "height": 300,
+        "width": 960
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2120,
+        1500
+      ],
+      "id": "3475093f-3c8a-4975-9f2b-b8a12a49c184",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        840,
+        660
+      ],
+      "id": "b951264c-9d38-41b4-8eec-590e7b360406",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify Linkedin Crawler": {
+      "main": [
+        [
+          {
+            "node": "Store Jobs to Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "OpenAI GPT4.1 Mini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linkedin Job Crawler to Google Sheet": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Github Profile": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Github Repo": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linkedin Profile Crawler": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI GPT4.1 Mini": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Apify Linkedin Crawler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Draft Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Google Drive2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive2": {
+      "main": [
+        [
+          {
+            "node": "Find Email Address",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Andynocode API Create Resume": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Set Email Field",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Perplexity Get Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Find the Email": {
+      "main": [
+        [
+          {
+            "node": "Set Email Field 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Apollo People Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft Email": {
+      "main": [
+        [
+          {
+            "node": "Generate Resume Json",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Resume Json": {
+      "main": [
+        [
+          {
+            "node": "Andynocode API Create Resume",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Email Address": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity Get Email": {
+      "main": [
+        [
+          {
+            "node": "If Find the Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Resume for Email 1": {
+      "main": [
+        [
+          {
+            "node": "Gmail1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail1": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apollo People Search": {
+      "main": [
+        [
+          {
+            "node": "If Find the Email1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Find the Email1": {
+      "main": [
+        [
+          {
+            "node": "Get Emails From Apollo1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Apollo People Search1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apollo People Search1": {
+      "main": [
+        [
+          {
+            "node": "If Find the Email2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Find the Email2": {
+      "main": [
+        [
+          {
+            "node": "Get Emails From Apollo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Emails From Apollo1": {
+      "main": [
+        [
+          {
+            "node": "Set Email Field 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Emails From Apollo": {
+      "main": [
+        [
+          {
+            "node": "Set Email Field 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email Field": {
+      "main": [
+        [
+          {
+            "node": "Set Email Field 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email Field 2": {
+      "main": [
+        [
+          {
+            "node": "Set Email Field 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email Field 3": {
+      "main": [
+        [
+          {
+            "node": "Set Email Field 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email Field 4": {
+      "main": [
+        [
+          {
+            "node": "Set Email Field 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email Field 5": {
+      "main": [
+        [
+          {
+            "node": "Download Resume for Email 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Drive1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1cdafea1-bf76-41aa-9705-1ab9742b8c6f",
+  "meta": {
+    "instanceId": "1740c26791c747bf49d93178a26934eaaffaca5ab2d087ae7e06b06ed236dff6"
+  },
+  "id": "yMJFP8v1JVh44fqC",
+  "tags": []
+}
